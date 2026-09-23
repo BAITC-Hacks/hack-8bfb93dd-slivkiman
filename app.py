@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import sys
 
 from flask import Flask, abort, redirect, render_template, request, url_for
 from openai import OpenAI
@@ -178,6 +179,64 @@ def get_task(task_id):
     return task
 
 
+def seed_demo_data():
+    """Create five synthetic tasks and proposals only when the catalog is empty."""
+    with get_connection() as connection:
+        if connection.execute("SELECT COUNT(*) FROM tasks").fetchone()[0]:
+            return False
+
+        sample_cards = [
+            {
+                "title": "Campus Feedback Ideas", "context": "", "business_need": "Explore student feedback options.",
+                "target_users": "", "available_data_materials": "", "constraints": "", "expected_result": "",
+                "success_criteria": "", "business_contact": "", "interaction_format": "",
+            },
+            {
+                "title": "Library Study Planner", "context": "Students need help planning study sessions.",
+                "business_need": "Improve use of library study spaces.", "target_users": "University students",
+                "available_data_materials": "", "constraints": "", "expected_result": "A planning prototype",
+                "success_criteria": "", "business_contact": "", "interaction_format": "",
+            },
+            {
+                "title": "Workshop Registration Helper", "context": "Popular workshops fill quickly.",
+                "business_need": "Make registration easier for students.", "target_users": "Students",
+                "available_data_materials": "Workshop schedule", "constraints": "", "expected_result": "",
+                "success_criteria": "", "business_contact": "Events coordinator", "interaction_format": "",
+            },
+            {
+                "title": "Course Material Navigator", "context": "Course materials are spread across several pages.",
+                "business_need": "Help students find the right learning material.", "target_users": "First-year students",
+                "available_data_materials": "Sample course materials", "constraints": "Use existing university systems only",
+                "expected_result": "A clickable navigation prototype", "success_criteria": "Five students can find a resource",
+                "business_contact": "", "interaction_format": "",
+            },
+            {
+                "title": "AI Study Assistant", "context": "Students struggle with difficult course material.",
+                "business_need": "Students need personalized explanations.", "target_users": "University students",
+                "available_data_materials": "Anonymized course notes", "constraints": "Do not use personal student data",
+                "expected_result": "A working prototype", "success_criteria": "Students rate explanations useful",
+                "business_contact": "Learning director", "interaction_format": "Weekly check-ins",
+            },
+        ]
+        topics = ["Education", "Education", "Student services", "Education", "Education"]
+        team_names = ["North Star", "Study Sparks", "Campus Coders", "Learning Loop", "Bright Minds"]
+
+        for card, topic, team_name in zip(sample_cards, topics, team_names):
+            readiness = calculate_readiness(card)
+            cursor = connection.execute(
+                """INSERT INTO tasks (title, topic, card_json, score, level)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (card["title"], topic, json.dumps(card), readiness["score"], readiness["level"]),
+            )
+            connection.execute("""
+                INSERT INTO proposals (task_id, team_name, solution_idea, implementation_plan,
+                                       estimated_timeline, prototype_link)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (cursor.lastrowid, team_name, "A focused prototype for this task.",
+                  "Research needs, build a prototype, then test it with users.", "Two weeks", ""))
+    return True
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -230,6 +289,9 @@ def edit_task_card():
 def publish_task():
     """Store a confirmed task so students can find it in the public catalog."""
     card = card_from_form(request.form)
+    if not any(card.values()):
+        return render_template("error.html", title="Cannot publish task",
+                               message="Add at least one task-card field before publishing."), 400
     readiness = calculate_readiness(card)
     topic = request.form.get("topic", "").strip()
     title = card["title"] or "Untitled task"
@@ -329,8 +391,23 @@ def decide_proposal(task_id, proposal_id):
     return redirect(url_for("business_proposals", task_id=task_id))
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return render_template("error.html", title="Page not found",
+                           message="The task or proposal you requested does not exist."), 404
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    return render_template("error.html", title="Request needs attention",
+                           message="Please check the form values and try again."), 400
+
+
 init_database()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    if "--seed-demo-data" in sys.argv:
+        print("Demo data created." if seed_demo_data() else "Catalog already has data; no demo data added.")
+    else:
+        app.run(debug=True)

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>{{ title }}</h1>
+    <p>{{ message }}</p>
+    <a class="button" href="{{ url_for('catalog') }}">Go to public catalog</a>
+</section>
+{% endblock %}
