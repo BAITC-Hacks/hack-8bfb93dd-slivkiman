@@ -60,8 +60,8 @@ def validate_questions(data):
         if field in TASK_FIELDS and question and field not in seen_fields:
             questions.append({"field": field, "question": question})
             seen_fields.add(field)
-    if len(questions) < 3:
-        raise ValueError("Fewer than three valid questions were returned.")
+    if not 3 <= len(questions) <= 5:
+        raise ValueError("The response must contain between three and five valid questions.")
     return questions
 
 
@@ -75,7 +75,8 @@ def generate_questions(description):
         "You help prepare a business task card. Return only clarification questions for "
         "information missing from the user's rough description. Do not state, assume, "
         "infer, summarize, or invent business facts. Each question must ask about one "
-        "supplied field. Produce at least three concise, relevant questions. Do not ask "
+        "supplied field. Produce between three and five concise, relevant questions. "
+        "Prioritize the missing information that most improves task readiness. Do not ask "
         "about a field already covered by the description."
     )
     try:
