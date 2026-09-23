@@ -1,7 +1,6 @@
 # Task Catalog MVP
 
-A 5-hour hackathon MVP for turning a rough business need into a structured task,
-collecting student-team proposals, and making a manual business decision.
+A 5-hour hackathon MVP that helps businesses turn rough needs into structured, readiness-rated tasks, publish them to an open catalog, receive student-team proposals, and manually choose who to work with.
 
 ## Architecture and tech stack
 

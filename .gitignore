@@ -1,5 +1,6 @@
 .env
 .venv/
 task_catalog.db
+test.txt
 __pycache__/
 *.pyc
