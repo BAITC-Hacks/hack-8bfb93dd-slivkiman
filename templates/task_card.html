@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Editable Task Card | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Editable task card</h1>
+    <p>Review and edit this card before a later-stage confirmation step. Empty fields mean no information was provided yet.</p>
+    <form>
+        {% for field, label in field_labels.items() %}
+            <label for="{{ field }}">{{ label }}</label>
+            <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ card[field] }}</textarea>
+        {% endfor %}
+    </form>
+</section>
+{% endblock %}

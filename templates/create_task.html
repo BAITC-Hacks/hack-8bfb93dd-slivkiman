@@ -7,22 +7,13 @@
     <h1>Describe your task</h1>
     <p>Write a rough description. You can include as much or as little detail as you have.</p>
 
-    <form method="post">
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('clarify_task') }}">
         <label for="description">Business need</label>
         <textarea id="description" name="description" rows="8" required placeholder="For example: We need a simple way to collect customer feedback after a purchase."></textarea>
         <button type="submit">Submit description</button>
     </form>
 </section>
-
-{% if description is not none %}
-<section class="card result">
-    <h2>Submitted description</h2>
-    {% if description %}
-        <p>{{ description }}</p>
-    {% else %}
-        <p>No description was entered.</p>
-    {% endif %}
-    <a href="{{ url_for('create_task') }}">Enter another description</a>
-</section>
-{% endif %}
 {% endblock %}

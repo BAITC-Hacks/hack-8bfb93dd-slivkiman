@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Clarify Task | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Clarify your task</h1>
+    <p>Answer the questions below. You may leave an answer blank if you do not know it yet.</p>
+    {% if error %}
+        <p class="notice">{{ error }}</p>
+    {% endif %}
+    <form method="post" action="{{ url_for('task_card') }}">
+        <input type="hidden" name="description" value="{{ description }}">
+        {% for item in questions %}
+            <label for="{{ item.field }}">{{ field_labels[item.field] }}</label>
+            <p class="question">{{ item.question }}</p>
+            <textarea id="{{ item.field }}" name="{{ item.field }}" rows="3"></textarea>
+        {% endfor %}
+        <button type="submit">Create editable task card</button>
+    </form>
+</section>
+{% endblock %}

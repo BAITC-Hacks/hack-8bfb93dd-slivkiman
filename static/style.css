@@ -70,3 +70,12 @@ button, .button {
 .result p {
     white-space: pre-wrap;
 }
+
+.error, .notice {
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.error { background: #fee2e2; color: #991b1b; }
+.notice { background: #fef3c7; color: #92400e; }
+.question { margin: 0.25rem 0 0.5rem; }
