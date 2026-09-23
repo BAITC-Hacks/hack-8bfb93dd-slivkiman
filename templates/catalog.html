@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Public Task Catalog | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Public task catalog</h1>
+    <form class="filters" method="get">
+        <label for="topic">Topic</label>
+        <select id="topic" name="topic">
+            <option value="">All topics</option>
+            {% for topic in topics %}<option value="{{ topic }}" {% if topic == selected_topic %}selected{% endif %}>{{ topic }}</option>{% endfor %}
+        </select>
+        <label for="level">Readiness level</label>
+        <select id="level" name="level">
+            <option value="">All levels</option>
+            {% for level in ['Draft', 'Working', 'Ready', 'Priority'] %}<option value="{{ level }}" {% if level == selected_level %}selected{% endif %}>{{ level }}</option>{% endfor %}
+        </select>
+        <button type="submit">Apply filters</button>
+    </form>
+</section>
+
+{% for task in tasks %}
+<article class="card catalog-task">
+    <h2>{{ task.title }}</h2>
+    {% if task.topic %}<p><strong>Topic:</strong> {{ task.topic }}</p>{% endif %}
+    <p><strong>Readiness:</strong> {{ task.score }}/100 — {{ task.level }}</p>
+    {% if task.card.context %}<p>{{ task.card.context[:180] }}{% if task.card.context|length > 180 %}…{% endif %}</p>{% endif %}
+    {% if task.card.business_need %}<p>{{ task.card.business_need[:180] }}{% if task.card.business_need|length > 180 %}…{% endif %}</p>{% endif %}
+    <a href="{{ url_for('task_detail', task_id=task.id) }}">View task</a>
+</article>
+{% else %}
+<section class="card"><p>No published tasks match these filters.</p></section>
+{% endfor %}
+{% endblock %}

@@ -1,11 +1,13 @@
 import json
 import os
+import sqlite3
 
-from flask import Flask, render_template, request
+from flask import Flask, abort, redirect, render_template, request, url_for
 from openai import OpenAI
 
 
 app = Flask(__name__)
+DB_PATH = os.path.join(app.root_path, "task_catalog.db")
 
 TASK_FIELDS = {
     "title": "Title", "context": "Context", "business_need": "Business need",
@@ -128,6 +130,54 @@ def card_from_form(form):
     return {field: form.get(field, "").strip() for field in TASK_FIELDS}
 
 
+def get_connection():
+    """Open the small SQLite database used by this MVP."""
+    connection = sqlite3.connect(DB_PATH)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+def init_database():
+    """Create the two MVP storage tables when the application starts."""
+    with get_connection() as connection:
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                topic TEXT NOT NULL,
+                card_json TEXT NOT NULL,
+                score INTEGER NOT NULL,
+                level TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS proposals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER NOT NULL,
+                team_name TEXT NOT NULL,
+                solution_idea TEXT NOT NULL,
+                implementation_plan TEXT NOT NULL,
+                estimated_timeline TEXT NOT NULL,
+                prototype_link TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'Pending',
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks(id)
+            )
+        """)
+
+
+def get_task(task_id):
+    """Return a published task with its stored card, or stop with a 404."""
+    with get_connection() as connection:
+        task = connection.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+    if task is None:
+        abort(404)
+    task = dict(task)
+    task["card"] = json.loads(task.pop("card_json"))
+    return task
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -174,6 +224,112 @@ def edit_task_card():
     """Return to the editable card without losing submitted values."""
     return render_template("task_card.html", card=card_from_form(request.form),
                            field_labels=TASK_FIELDS)
+
+
+@app.route("/publish", methods=["POST"])
+def publish_task():
+    """Store a confirmed task so students can find it in the public catalog."""
+    card = card_from_form(request.form)
+    readiness = calculate_readiness(card)
+    topic = request.form.get("topic", "").strip()
+    title = card["title"] or "Untitled task"
+
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """INSERT INTO tasks (title, topic, card_json, score, level)
+               VALUES (?, ?, ?, ?, ?)""",
+            (title, topic, json.dumps(card), readiness["score"], readiness["level"]),
+        )
+        task_id = cursor.lastrowid
+    return redirect(url_for("task_detail", task_id=task_id))
+
+
+@app.route("/catalog")
+def catalog():
+    """Show published tasks, with small topic and readiness filters."""
+    selected_topic = request.args.get("topic", "")
+    selected_level = request.args.get("level", "")
+    query = "SELECT * FROM tasks WHERE 1 = 1"
+    parameters = []
+    if selected_topic:
+        query += " AND topic = ?"
+        parameters.append(selected_topic)
+    if selected_level:
+        query += " AND level = ?"
+        parameters.append(selected_level)
+    query += " ORDER BY score DESC, id DESC"
+
+    with get_connection() as connection:
+        tasks = [dict(row) for row in connection.execute(query, parameters).fetchall()]
+        topics = [row[0] for row in connection.execute(
+            "SELECT DISTINCT topic FROM tasks WHERE topic <> '' ORDER BY topic"
+        ).fetchall()]
+    for task in tasks:
+        task["card"] = json.loads(task.pop("card_json"))
+    return render_template("catalog.html", tasks=tasks, topics=topics,
+                           selected_topic=selected_topic, selected_level=selected_level)
+
+
+@app.route("/tasks/<int:task_id>")
+def task_detail(task_id):
+    """Show the full confirmed task card to a student or business user."""
+    return render_template("task_detail.html", task=get_task(task_id), field_labels=TASK_FIELDS)
+
+
+@app.route("/tasks/<int:task_id>/propose", methods=["GET", "POST"])
+def submit_proposal(task_id):
+    """Let a student team add a proposal without authentication."""
+    task = get_task(task_id)
+    if request.method == "POST":
+        proposal = {
+            "team_name": request.form.get("team_name", "").strip(),
+            "solution_idea": request.form.get("solution_idea", "").strip(),
+            "implementation_plan": request.form.get("implementation_plan", "").strip(),
+            "estimated_timeline": request.form.get("estimated_timeline", "").strip(),
+            "prototype_link": request.form.get("prototype_link", "").strip(),
+        }
+        required = ("team_name", "solution_idea", "implementation_plan", "estimated_timeline")
+        if not all(proposal[field] for field in required):
+            return render_template("proposal_form.html", task=task, proposal=proposal,
+                                   error="Please complete the required proposal fields."), 400
+        with get_connection() as connection:
+            connection.execute("""
+                INSERT INTO proposals (task_id, team_name, solution_idea, implementation_plan,
+                                       estimated_timeline, prototype_link)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (task_id, *proposal.values()))
+        return redirect(url_for("task_detail", task_id=task_id))
+    return render_template("proposal_form.html", task=task, proposal={}, error=None)
+
+
+@app.route("/tasks/<int:task_id>/proposals")
+def business_proposals(task_id):
+    """Show all team proposals for a task; no ranking is performed."""
+    task = get_task(task_id)
+    with get_connection() as connection:
+        proposals = [dict(row) for row in connection.execute(
+            "SELECT * FROM proposals WHERE task_id = ? ORDER BY id DESC", (task_id,)
+        ).fetchall()]
+    return render_template("proposals.html", task=task, proposals=proposals)
+
+
+@app.route("/tasks/<int:task_id>/proposals/<int:proposal_id>/decision", methods=["POST"])
+def decide_proposal(task_id, proposal_id):
+    """Record the business's explicit Accept or Reject decision."""
+    decision = request.form.get("decision")
+    if decision not in ("Accepted", "Rejected"):
+        abort(400)
+    with get_connection() as connection:
+        proposal = connection.execute(
+            "SELECT id FROM proposals WHERE id = ? AND task_id = ?", (proposal_id, task_id)
+        ).fetchone()
+        if proposal is None:
+            abort(404)
+        connection.execute("UPDATE proposals SET status = ? WHERE id = ?", (decision, proposal_id))
+    return redirect(url_for("business_proposals", task_id=task_id))
+
+
+init_database()
 
 
 if __name__ == "__main__":

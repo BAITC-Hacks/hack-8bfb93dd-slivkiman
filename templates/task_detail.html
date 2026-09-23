@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.title }} | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>{{ task.title }}</h1>
+    <p><strong>Readiness:</strong> {{ task.score }}/100 — {{ task.level }}</p>
+    {% if task.topic %}<p><strong>Topic:</strong> {{ task.topic }}</p>{% endif %}
+    <dl class="task-details">
+        {% for field, label in field_labels.items() %}
+            <dt>{{ label }}</dt>
+            <dd>{{ task.card[field] or 'Not provided' }}</dd>
+        {% endfor %}
+    </dl>
+    <a class="button" href="{{ url_for('submit_proposal', task_id=task.id) }}">Submit proposal</a>
+    <a class="button secondary" href="{{ url_for('business_proposals', task_id=task.id) }}">View proposals as business</a>
+</section>
+{% endblock %}

@@ -38,5 +38,14 @@
         {% endfor %}
         <button type="submit">Edit task card</button>
     </form>
+
+    <form method="post" action="{{ url_for('publish_task') }}">
+        {% for field, value in card.items() %}
+            <input type="hidden" name="{{ field }}" value="{{ value }}">
+        {% endfor %}
+        <label for="topic">Topic (optional)</label>
+        <input id="topic" name="topic" type="text" placeholder="For example: Education">
+        <button type="submit">Publish task</button>
+    </form>
 </section>
 {% endblock %}

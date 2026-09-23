@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Proposals | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Proposals for {{ task.title }}</h1>
+    <p>Business decisions are manual. This page does not rank or select teams.</p>
+</section>
+
+{% for proposal in proposals %}
+<article class="card proposal">
+    <h2>{{ proposal.team_name }}</h2>
+    <p><strong>Status:</strong> {{ proposal.status }}</p>
+    <p><strong>Solution idea:</strong> {{ proposal.solution_idea }}</p>
+    <p><strong>Plan:</strong> {{ proposal.implementation_plan }}</p>
+    <p><strong>Timeline:</strong> {{ proposal.estimated_timeline }}</p>
+    <p><strong>Prototype:</strong> {% if proposal.prototype_link %}<a href="{{ proposal.prototype_link }}">{{ proposal.prototype_link }}</a>{% else %}Not provided{% endif %}</p>
+    <form class="decision-form" method="post" action="{{ url_for('decide_proposal', task_id=task.id, proposal_id=proposal.id) }}">
+        <button name="decision" value="Accepted" type="submit">Accept</button>
+        <button class="reject" name="decision" value="Rejected" type="submit">Reject</button>
+    </form>
+</article>
+{% else %}
+<section class="card"><p>No proposals have been submitted yet.</p></section>
+{% endfor %}
+{% endblock %}

@@ -19,6 +19,8 @@ header {
     text-decoration: none;
 }
 
+.catalog-link { color: white; margin-left: 1rem; text-decoration: none; }
+
 main {
     max-width: 720px;
     margin: 3rem auto;
@@ -37,7 +39,7 @@ h1, h2 {
     margin-top: 0;
 }
 
-label, textarea, button {
+label, textarea, button, input, select {
     display: block;
 }
 
@@ -51,6 +53,13 @@ textarea {
     font: inherit;
     padding: 0.75rem;
     resize: vertical;
+    width: 100%;
+}
+
+input, select {
+    box-sizing: border-box;
+    font: inherit;
+    padding: 0.65rem;
     width: 100%;
 }
 
@@ -85,3 +94,10 @@ button, .button {
 .level { font-size: 1.25rem; font-weight: bold; margin-bottom: 0; }
 .breakdown { padding-left: 1.25rem; }
 .breakdown li { margin: 0.75rem 0; }
+.secondary { background: #4b5563; margin-left: 0.5rem; }
+.filters { display: grid; gap: 0.5rem; }
+.task-details dt { font-weight: bold; margin-top: 1rem; }
+.task-details dd { margin: 0.25rem 0; white-space: pre-wrap; }
+.decision-form { display: flex; gap: 0.5rem; }
+.decision-form button { margin-top: 0; }
+.reject { background: #b91c1c; }

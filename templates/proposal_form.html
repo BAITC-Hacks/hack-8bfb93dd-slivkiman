@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Proposal | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h1>Submit a proposal</h1>
+    <p>For: {{ task.title }}</p>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post">
+        <label for="team_name">Team name</label>
+        <input id="team_name" name="team_name" required value="{{ proposal.team_name or '' }}">
+        <label for="solution_idea">Solution idea</label>
+        <textarea id="solution_idea" name="solution_idea" rows="4" required>{{ proposal.solution_idea or '' }}</textarea>
+        <label for="implementation_plan">Implementation plan</label>
+        <textarea id="implementation_plan" name="implementation_plan" rows="4" required>{{ proposal.implementation_plan or '' }}</textarea>
+        <label for="estimated_timeline">Estimated timeline</label>
+        <input id="estimated_timeline" name="estimated_timeline" required value="{{ proposal.estimated_timeline or '' }}">
+        <label for="prototype_link">Prototype link</label>
+        <input id="prototype_link" name="prototype_link" type="url" value="{{ proposal.prototype_link or '' }}">
+        <button type="submit">Submit proposal</button>
+    </form>
+</section>
+{% endblock %}
