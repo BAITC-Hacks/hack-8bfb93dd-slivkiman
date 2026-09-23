@@ -1,0 +1,72 @@
+:root {
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+    background: #f3f4f6;
+}
+
+body {
+    margin: 0;
+}
+
+header {
+    background: #1d4ed8;
+    padding: 1rem 2rem;
+}
+
+.brand {
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+main {
+    max-width: 720px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+}
+
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+h1, h2 {
+    margin-top: 0;
+}
+
+label, textarea, button {
+    display: block;
+}
+
+label {
+    font-weight: bold;
+    margin: 1.5rem 0 0.5rem;
+}
+
+textarea {
+    box-sizing: border-box;
+    font: inherit;
+    padding: 0.75rem;
+    resize: vertical;
+    width: 100%;
+}
+
+button, .button {
+    background: #1d4ed8;
+    border: 0;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    display: inline-block;
+    font: inherit;
+    margin-top: 1rem;
+    padding: 0.7rem 1rem;
+    text-decoration: none;
+}
+
+.result p {
+    white-space: pre-wrap;
+}

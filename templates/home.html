@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+    <h1>Turn business needs into student tasks</h1>
+    <p>Start by describing the business need in your own words.</p>
+    <a class="button" href="{{ url_for('create_task') }}">Describe a task</a>
+</section>
+{% endblock %}
