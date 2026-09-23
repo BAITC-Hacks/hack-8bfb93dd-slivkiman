@@ -1,7 +1,8 @@
 # Task Catalog MVP
 
 A small Flask starter for a hackathon project. A business user can enter a
-rough task description, answer clarification questions, and edit a task card.
+rough task description, answer clarification questions, edit a task card, and
+calculate a deterministic readiness rating.
 
 ## Files
 
@@ -12,6 +13,7 @@ rough task description, answer clarification questions, and edit a task card.
 - `templates/create_task.html` contains the rough task-description form.
 - `templates/clarify_task.html` displays clarification questions.
 - `templates/task_card.html` displays the editable task card.
+- `templates/rating.html` displays the score, transparent breakdown, and edit action.
 - `static/style.css` contains the page styling.
 - `requirements.txt` lists the Python dependency.
 - `.env.example` documents the environment-file convention for later stages.
@@ -53,3 +55,5 @@ call fails, the app shows fallback questions so the flow still works.
 3. Confirm that at least three clarification questions are displayed.
 4. Answer one or more questions and select **Create editable task card**.
 5. Confirm the supplied rough description and answers appear in editable fields.
+6. Select **Confirm and calculate rating**, then use **Edit task card** to add
+   information and calculate an updated score.

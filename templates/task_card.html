@@ -6,11 +6,12 @@
 <section class="card">
     <h1>Editable task card</h1>
     <p>Review and edit this card before a later-stage confirmation step. Empty fields mean no information was provided yet.</p>
-    <form>
+    <form method="post" action="{{ url_for('rating') }}">
         {% for field, label in field_labels.items() %}
             <label for="{{ field }}">{{ label }}</label>
             <textarea id="{{ field }}" name="{{ field }}" rows="3">{{ card[field] }}</textarea>
         {% endfor %}
+        <button type="submit">Confirm and calculate rating</button>
     </form>
 </section>
 {% endblock %}

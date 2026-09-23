@@ -79,3 +79,9 @@ button, .button {
 .error { background: #fee2e2; color: #991b1b; }
 .notice { background: #fef3c7; color: #92400e; }
 .question { margin: 0.25rem 0 0.5rem; }
+
+.rating-summary { text-align: center; }
+.score { color: #1d4ed8; font-size: 3rem; font-weight: bold; margin: 0; }
+.level { font-size: 1.25rem; font-weight: bold; margin-bottom: 0; }
+.breakdown { padding-left: 1.25rem; }
+.breakdown li { margin: 0.75rem 0; }

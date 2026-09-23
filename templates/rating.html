@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Task Readiness Rating | Task Catalog MVP{% endblock %}
+
+{% block content %}
+<section class="card rating-summary">
+    <h1>Task readiness rating</h1>
+    <p class="score">{{ rating.score }}/100</p>
+    <p class="level">{{ rating.level }}</p>
+</section>
+
+<section class="card">
+    <h2>Score breakdown</h2>
+    <ul class="breakdown">
+        {% for item in rating.breakdown %}
+            <li>
+                <strong>{{ item.category }}:</strong> {{ item.points }}/{{ item.maximum }}
+                {% if item.missing %}<span> — Missing: {{ item.missing | join(', ') }}</span>{% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="card">
+    <h2>Recommendations</h2>
+    {% if rating.missing_fields %}
+        <p>Complete these fields to increase the rating:</p>
+        <ul>
+            {% for field in rating.missing_fields %}<li>{{ field }}</li>{% endfor %}
+        </ul>
+    {% else %}
+        <p>All score-related information is complete.</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('edit_task_card') }}">
+        {% for field, value in card.items() %}
+            <input type="hidden" name="{{ field }}" value="{{ value }}">
+        {% endfor %}
+        <button type="submit">Edit task card</button>
+    </form>
+</section>
+{% endblock %}
