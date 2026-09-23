@@ -80,7 +80,7 @@ def generate_questions(description):
         "about a field already covered by the description."
     )
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=api_key, timeout=10.0)
         response = client.responses.create(
             model="gpt-4o-mini", instructions=instructions, input=description,
             text={"format": {"type": "json_schema", "name": "clarification_questions",
